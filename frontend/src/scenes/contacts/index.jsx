@@ -4,14 +4,71 @@ import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
+// import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
 
 const Contacts = () => {
+  const calculateTimeLeft = () => {
+    const difference = +new Date("2024-04-15") - +new Date();
+    let timeLeft = {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+    };
+
+    if (difference > 0) {
+      timeLeft = {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    }
+
+    return timeLeft;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  useEffect(() => {
+    // Mengatur interval untuk memperbarui timeLeft setiap detik
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    // Membersihkan interval ketika komponen di-unmount
+    return () => clearInterval(timer);
+  }, []); // Kosongkan array dependency agar useEffect hanya berjalan sekali saat komponen dimount
+
+  // Sisanya sama seperti kode Anda
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setTimeLeft(calculateTimeLeft());
+  //   }, 1000);
+
+  //   return () => clearTimeout(timer);
+  // });
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setTimeLeft(calculateTimeLeft("2024-01-01"));
+  //   }, 1000);
+  
+  //   return () => clearTimeout(timer);
+  // }, [timeLeft]);
+
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const updatedMockDataContacts = mockDataContacts.map(contact => ({
+    ...contact,
+    timeLeft: `${timeLeft.days} Days ${timeLeft.hours} Hours ${timeLeft.minutes} Minutes ${timeLeft.seconds} Seconds`
+  }));
+
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5 },
-    { field: "registrarId", headerName: "Registrar ID" },
+    { field: "customerId", headerName: "Customer ID" },
     {
       field: "name",
       headerName: "Name",
@@ -19,8 +76,8 @@ const Contacts = () => {
       cellClassName: "name-column--cell",
     },
     {
-      field: "age",
-      headerName: "Age",
+      field: "birthdate",
+      headerName: "Birthdate",
       type: "number",
       headerAlign: "left",
       align: "left",
@@ -48,6 +105,16 @@ const Contacts = () => {
     {
       field: "zipCode",
       headerName: "Zip Code",
+      flex: 1,
+    },
+    {
+      field: "membershipType",
+      headerName: "Membership Type",
+      flex: 1,
+    },
+    {
+      field: "timeLeft",
+      headerName: "Time Left",
       flex: 1,
     },
   ];
@@ -91,12 +158,13 @@ const Contacts = () => {
         }}
       >
         <DataGrid
-          rows={mockDataContacts}
+          rows={updatedMockDataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
         />
       </Box>
     </Box>
+
   );
 };
 
